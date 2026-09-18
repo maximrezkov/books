@@ -25,6 +25,17 @@ export const routes: RouteRecordRaw[] = [
     component: () => import('../pages/book/BookPage.vue'),
     name: 'bookPage',
   },
+  {
+    path: '/auth',
+    component: () => import('../pages/auth/AuthPage.vue'),
+    name: 'auth',
+    props: route => ({ isRegister: route.query.isRegister === 'true' }),
+  },
+  {
+    path: '/profile',
+    component: () => import('../pages/profile/ProfilePage.vue'),
+    name: 'profile',
+  },
 ]
 
 export const router = createRouter({

@@ -13,10 +13,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
   padding: 10px 18px;
 
-  font: inherit;
   font-weight: 500;
   line-height: 1.25;
   text-decoration: none;
