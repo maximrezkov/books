@@ -1,6 +1,7 @@
 <template>
   <main class="page-layout auth-page">
     <PageHeader :title="isRegister ? 'Регистрация' : 'Вход'" />
+    <p v-if="isRegister" class="auth-form__notice" role="status">Регистрация пока недоступна. Если у вас есть аккаунт, <RouterLink :to="{ name: 'auth', query: { ...route.query, isRegister: 'false' } }">войдите</RouterLink>.</p>
 
     <form class="auth-form" @submit.prevent="handleSubmit">
       <div class="auth-form__field">
@@ -46,8 +47,9 @@
         </p>
       </div>
 
-      <button type="submit" class="auth-form__submit">
-        {{ isRegister ? 'Зарегистрироваться' : 'Войти' }}
+      <p v-if="submitError" class="auth-form__error" role="alert">{{ submitError }}</p>
+      <button type="submit" class="auth-form__submit" :disabled="submitting || isRegister">
+        {{ submitting ? 'Входим…' : isRegister ? 'Зарегистрироваться' : 'Войти' }}
       </button>
     </form>
   </main>
@@ -56,6 +58,9 @@
 <script lang="ts" setup>
 import { computed, ref, watch } from 'vue'
 import PageHeader from '@/components/page-header/PageHeader.vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { api, errorMessage } from '@/services/api'
+import { saveSession } from '@/services/session'
 
 const props = withDefaults(defineProps<{
   isRegister?: boolean
@@ -68,17 +73,35 @@ const password = ref('')
 const repeatPassword = ref('')
 const repeatPasswordTouched = ref(false)
 const repeatPasswordInput = ref<HTMLInputElement | null>(null)
+const submitting = ref(false)
+const submitError = ref('')
+const route = useRoute()
+const router = useRouter()
 
 const showPasswordError = computed(() =>
   props.isRegister && repeatPasswordTouched.value && password.value !== repeatPassword.value,
 )
 
-function handleSubmit() {
+async function handleSubmit() {
+  if (submitting.value || props.isRegister) return
+  submitError.value = ''
   repeatPasswordTouched.value = true
 
   if (showPasswordError.value) {
     repeatPasswordInput.value?.focus()
     return
+  }
+  submitting.value = true
+  try {
+    const session = await api.login({ username: login.value, password: password.value })
+    saveSession(session)
+    password.value = ''
+    const redirect = route.query.redirect
+    await router.replace(typeof redirect === 'string' && redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : { name: 'profile' })
+  } catch (error) {
+    submitError.value = errorMessage(error)
+  } finally {
+    submitting.value = false
   }
 }
 
@@ -86,6 +109,7 @@ watch(() => props.isRegister, () => {
   password.value = ''
   repeatPassword.value = ''
   repeatPasswordTouched.value = false
+  submitError.value = ''
 })
 </script>
 
@@ -93,6 +117,10 @@ watch(() => props.isRegister, () => {
 .auth-page {
   text-align: left;
 }
+
+.auth-form__notice { margin-top: 20px; }
+.auth-form__notice a { color: var(--accent); }
+.auth-form__submit:disabled { opacity: .5; cursor: not-allowed; }
 
 .auth-form {
   display: flex;

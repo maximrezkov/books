@@ -1,8 +1,10 @@
 <template>
   <main class="page-layout profile-page">
     <PageHeader title="Профиль" />
+    <p class="profile-page__username">Логин: {{ currentUser?.username || 'Не указан' }}</p>
+    <p>СМС-уведомления пока недоступны.</p>
 
-    <div class="profile-notifications">
+    <fieldset disabled class="profile-notifications">
       <label class="profile-notifications__toggle">
         <input v-model="smsEnabled" type="checkbox" aria-controls="sms-phone-field" />
         <span>Получать уведомления по СМС</span>
@@ -25,13 +27,14 @@
       <button type="button" class="profile-notifications__confirm" :disabled="isConfirmDisabled">
         Подтвердить
       </button>
-    </div>
+    </fieldset>
   </main>
 </template>
 
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
 import PageHeader from '@/components/page-header/PageHeader.vue'
+import { currentUser } from '@/services/session'
 
 const smsEnabled = ref(false)
 const phone = ref('')
@@ -61,7 +64,12 @@ function formatPhone(event: Event) {
 
 .profile-notifications {
   margin-top: 28px;
+  padding: 0;
+  border: 0;
+  min-width: 0;
 }
+
+.profile-page__username { margin: 24px 0 12px; }
 
 .profile-notifications__toggle {
   display: inline-flex;

@@ -14,11 +14,7 @@
         />
 
         <div v-else class="book-card__placeholder" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
-            <path d="M12 6c-3-2-6-2-9-1v14c3-1 6-1 9 1 3-2 6-2 9-1V5c-3-1-6-1-9 1Z" />
-            <path d="M12 6v14" />
-          </svg>
-          <span>{{ title }}</span>
+          <span>Нет обложки</span>
         </div>
       </div>
 
@@ -119,15 +115,11 @@ watch(() => props.cover, () => { coverFailed.value = false })
   gap: 16px;
   padding: 20px 12px;
   box-sizing: border-box;
-  border: 1px solid var(--accent-border);
-  border-radius: 4px 10px 10px 4px;
-  background: var(--bg);
-  color: var(--accent);
+  background: var(--social-bg);
+  color: var(--text);
   text-align: center;
-  box-shadow: var(--shadow);
 }
 
-.book-card__placeholder svg { width: 36px; height: 36px; flex-shrink: 0; }
 .book-card__placeholder span { font-size: 15px; line-height: 1.35; }
 
 .book-card__info { display: flex; flex-direction: column; gap: 5px; }

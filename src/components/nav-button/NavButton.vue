@@ -1,12 +1,17 @@
 <template>
   <RouterLink
-    to="/books"
+    :to="to"
     class="nav-button"
     exact-active-class="nav-button--active"
   >
     <slot/>
   </RouterLink>
 </template>
+
+<script setup lang="ts">
+import { RouterLink, type RouteLocationRaw } from 'vue-router'
+defineProps<{ to: RouteLocationRaw }>()
+</script>
 
 <style scoped>
 .nav-button {

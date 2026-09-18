@@ -1,6 +1,6 @@
 <template>
   <div class="header-actions">
-    <button v-if="isAuthenticated" type="button" class="header-actions__button">
+    <button v-if="isAuthenticated" type="button" class="header-actions__button" @click="logout">
       Выйти
     </button>
     <RouterLink
@@ -24,10 +24,14 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
-import { RouterLink } from 'vue-router';
+import { RouterLink, useRouter } from 'vue-router';
+import { clearSession, isAuthenticated } from '@/services/session';
 
-const isAuthenticated = ref(true)
+const router = useRouter()
+function logout() {
+  clearSession()
+  void router.push({ name: 'home' })
+}
 </script>
 
 <style lang="scss" scoped>

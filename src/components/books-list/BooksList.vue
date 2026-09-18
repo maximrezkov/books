@@ -6,11 +6,7 @@
         :title="book.title || 'Без названия'"
         :cover="book.cover_url"
         :to="book.id != null ? { name: 'bookPage', params: { id: book.id } } : { name: 'catalog' }"
-      >
-        <template #action>
-          <BookActionButton :action="isMy ? 'favorite' : 'library'"/>
-        </template>
-      </BookCard>
+      />
     </div>
   </div>
 </template>
@@ -18,11 +14,9 @@
 <script lang="ts" setup>
 import type { Book } from '@/types';
 import BookCard from '@/components/book-card/BookCard.vue';
-import BookActionButton from '@/components/book-action-button/BookActionButton.vue';
 
 const props = defineProps<{
   books: Book[],
-  isMy?: boolean,
 }>()
 </script>
 

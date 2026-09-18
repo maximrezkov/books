@@ -11,16 +11,21 @@
       </template>
     </PageHeader>
 
-    <p v-if="!topAuthors.length" role="status">За {{ selectedYear }} год книги не найдены.</p>
+    <p v-if="loading" role="status">Загружаем авторов…</p>
+    <div v-else-if="error" role="alert">
+      <p>{{ error }}</p>
+      <button class="ui-button" type="button" @click="refresh">Повторить</button>
+    </div>
+    <p v-else-if="!topAuthors?.length" role="status">За {{ selectedYear }} год книги не найдены.</p>
 
     <section
       v-for="author in topAuthors"
-      :key="author.id"
+      :key="author.author_id"
       class="author-section"
-      :aria-labelledby="`author-${author.id}`"
+      :aria-labelledby="`author-${author.author_id}`"
     >
-      <h2 :id="`author-${author.id}`" class="author-section__title">
-        <RouterLink :to="{ name: 'home' }" class="author-section__link">
+      <h2 :id="`author-${author.author_id}`" class="author-section__title">
+        <RouterLink :to="{ name: 'catalog', query: { author_id: author.author_id, year: selectedYear } }" class="author-section__link">
           {{ author.full_name }}
           <svg
             class="author-section__chevron"
@@ -42,35 +47,25 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import BooksList from '@/components/books-list/BooksList.vue'
 import PageHeader from '@/components/page-header/PageHeader.vue'
-import type { Book } from '@/types'
-import { demoBooks, demoReportYear } from './demo-books'
+import { api } from '@/services/api'
+import { useApiResource } from '@/composables/use-api-resource'
 
-const selectedYear = ref(demoReportYear)
-const years = Array.from({ length: 10 }, (_, index) => demoReportYear - index)
+const currentYear = new Date().getFullYear()
+const selectedYear = ref(currentYear)
+const years = Array.from({ length: 10 }, (_, index) => currentYear - index)
 
-const topAuthors = computed(() => {
-  const authors = new Map<number, { id: number; full_name: string; books: Book[] }>()
-
-  for (const book of demoBooks.filter(book => book.year === selectedYear.value)) {
-    for (const author of book.authors ?? []) {
-      if (author.id == null || !author.full_name) continue
-
-      if (!authors.has(author.id)) {
-        authors.set(author.id, { id: author.id, full_name: author.full_name, books: [] })
-      }
-
-      authors.get(author.id)!.books.push(book)
-    }
-  }
-
-  return [...authors.values()]
-    .sort((first, second) => second.books.length - first.books.length)
-    .slice(0, 10)
-})
+const { data: topAuthors, loading, error, refresh } = useApiResource(async signal => {
+  const year = selectedYear.value
+  const report = await api.topAuthors(year, signal)
+  return Promise.all((report.items ?? []).slice(0, 10).map(async author => {
+    const books = author.author_id == null ? [] : (await api.books({ author_id: author.author_id, year, 'per-page': 8 }, signal)).items ?? []
+    return { ...author, books }
+  }))
+}, () => selectedYear.value)
 </script>
 
 <style scoped lang="scss">
